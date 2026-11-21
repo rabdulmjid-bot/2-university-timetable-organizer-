@@ -11,10 +11,23 @@ Test Scenario
 
 Results
 
-Code Version	Expected Conflicts	Actual Result	Status
-Our Original Code	1	1	Passed
-Copilot Code	1	1	Passed
-Improved Code	1	1	Passed
+1. Our Original Code
+
+* Expected Conflicts: 1
+* Actual Result: 1
+* Status: Passed
+
+2. Copilot Code
+
+* Expected Conflicts: 1
+* Actual Result: 1
+* Status: Passed
+
+3. Improved Code
+
+* Expected Conflicts: 1
+* Actual Result: 1
+* Status: Passed
 
 Conclusion
 
