@@ -1,0 +1,9 @@
+8. GitHub Copilot Prompts
+
+Prompt 1: Generate the Code
+
+Create a beginner-friendly Python program called University Timetable Organizer and Conflict Detector. The program should allow students to enter their classes from Sunday to Thursday, with a maximum of 3 classes per day. It should ask for the course code, start time, and end time using the 24-hour HH:MM format. It should validate the input, display the weekly timetable, detect overlapping classes, and show a conflict report.
+
+Prompt 2: Improve the Code
+
+Improve the previous Python program. Make the code more organized and beginner-friendly. Use separate functions for entering course information, validating course codes and times, displaying the timetable, and detecting conflicts. Add clear comments and improve input validation while keeping the program easy to understand.
