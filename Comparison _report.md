@@ -10,22 +10,25 @@ We created our original program using Python functions, loops, and if statements
 
 3. Copilot Code
 
-We used GitHub Copilot to generate another version of our program. It uses lists and dictionaries to store class information. It also includes input validation and functions to organize the program.
+We used GitHub Copilot to generate another version of our program. It uses lists and dictionaries to store class information. It also includes input validation and functions to organize the program. The program checks for overlapping classes and displays a weekly timetable and conflict report.
 
 4. Improved Code
 
-We asked GitHub Copilot to improve its previous code. The improved version includes more functions, clearer comments, and better input validation. It also checks that course codes are not empty.
+We asked GitHub Copilot to improve its previous code. The improved version organizes the program into separate functions, making it easier to read and understand. It includes input validation, checks that course codes are not empty, and ensures that the end time is after the start time. It also displays the timetable in aligned columns and separates conflict detection from displaying the results.
 
 5. Comparison
 
-* Our original code allows up to 4 classes per day, while both Copilot versions allow up to 3.
-* Our code uses numbers such as 900 to enter time, while Copilot uses HH:MM format, such as 09:00.
-* Our original code uses separate variables, while Copilot uses lists and dictionaries.
-* The improved code has more organized functions and better input validation.
+* All three programs allow students to enter up to 4 classes per day.
+* Our original code uses separate variables to store class information, while both Copilot versions use lists and dictionaries.
+* Our original code accepts time as numbers, such as 900, while both Copilot versions use the HH:MM format, such as 09:00.
+* The Copilot Code uses the main program directly to collect classes and check conflicts.
+* The Improved Copilot Code organizes the program into separate functions, making it easier to read, understand, and maintain.
+* The Improved Copilot Code separates timetable input, conflict detection, and displaying results into different functions.
+* Both Copilot versions validate class codes and times and check that the end time is after the start time.
 
 6. Conclusion
 
-This project helped us understand Python functions, loops, conditions, and input validation. We also learned how GitHub Copilot can help generate and improve code. We learned that AI-generated code should be tested and reviewed.
+This project helped us understand Python functions, loops, conditions, lists, dictionaries, and input validation. We also learned how GitHub Copilot can generate and improve code. Comparing the three versions showed us the importance of organizing code, testing programs, and reviewing AI-generated results.
 
 7. Testing Results
 
@@ -58,6 +61,6 @@ Results
 * Actual Result: 1
 * Status: Passed
 
-Conclusion
+Test Conclusion
 
 All three programs successfully detected one conflict between CS101 and MATH101. The test showed that all versions can detect overlapping class times.
