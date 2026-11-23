@@ -1,9 +1,25 @@
-8. GitHub Copilot Prompts
+ GitHub Copilot Prompts
 
-Prompt 1: Generate the Code
+Prompt 1: Generate Copilot Code
 
-Create a beginner-friendly Python program called University Timetable Organizer and Conflict Detector. The program should allow students to enter their classes from Sunday to Thursday, with a maximum of 3 classes per day. It should ask for the course code, start time, and end time using the 24-hour HH:MM format. It should validate the input, display the weekly timetable, detect overlapping classes, and show a conflict report.
+Create a beginner-friendly Python program called University Timetable Organizer and Conflict Detector. The program should allow students to enter their classes from Sunday to Thursday, with a maximum of 4 classes per day. It should ask for the class code, start time, and end time using the 24-hour HH:MM format. It should validate the input, display the weekly timetable, detect overlapping classes, and show a conflict report.
 
-Prompt 2: Improve the Code
+Prompt 2: Improve Copilot Code
 
-Improve the previous Python program. Make the code more organized and beginner-friendly. Use separate functions for entering course information, validating course codes and times, displaying the timetable, and detecting conflicts. Add clear comments and improve input validation while keeping the program easy to understand.
+I reviewed the code and noticed these issues:
+
+1. All the logic is inside one long main() function, which makes it hard to read.
+2. If the user enters an invalid end time, they must re-enter the start time too, even though it was already valid.
+3. The course code is accepted even when it is empty.
+4. The timetable output is not aligned.
+
+Please improve the code by:
+
+* Splitting main() into smaller helper functions with clear names (for example: reading the number of classes, reading a class, finding conflicts, printing the timetable).
+* Re-asking only for the field that was invalid.
+* Rejecting empty course codes and asking again.
+* Using format() with width specifiers to align the timetable columns.
+* Adding short comments for each section.
+* Keeping the maximum number of classes at 4 per day.
+
+Keep the same program behavior. After the changes, briefly explain what you changed.
