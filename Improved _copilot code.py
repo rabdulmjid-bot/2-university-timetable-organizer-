@@ -1,324 +1,350 @@
+# ============================================
 # University Timetable Organizer and Conflict Detector
-# This program asks the student to enter a timetable and reports
-# any classes that overlap on the same day.
+# ============================================
 
-# Store the allowed days in a list
-DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
-
-# Store the maximum number of classes allowed per day
-MAX_CLASSES = 3
-
-
-def convert_time_to_minutes(time_text):
-    """
-    Check whether time_text is a valid 24-hour time.
-
-    Valid format: HH:MM
-    Valid examples: 08:30, 12:00, 23:59
-
-    If the time is valid, the function returns its total minutes
-    after midnight. If the time is invalid, it returns None.
-    """
-    # split() separates HH and MM around the colon
-    parts = time_text.split(":")
-
-    # A valid time must have exactly two parts
-    if len(parts) != 2:
-        return None
-
-    hour_text = parts[0]
-    minute_text = parts[1]
-
-    # Both parts must contain numbers only
-    if not hour_text.isdigit() or not minute_text.isdigit():
-        return None
-
-    # Convert the string parts into integers
-    hour = int(hour_text)
-    minute = int(minute_text)
-
-    # Check the 24-hour time ranges
-    if hour < 0 or hour > 23:
-        return None
-
-    if minute < 0 or minute > 59:
-        return None
-
-    # Convert the time into minutes
-    total_minutes = (hour * 60) + minute
-    return total_minutes
+def get_day_name(day_number):
+    # Section: Get the day name
+    if day_number == 1:
+        return "Sunday"
+    elif day_number == 2:
+        return "Monday"
+    elif day_number == 3:
+        return "Tuesday"
+    elif day_number == 4:
+        return "Wednesday"
+    else:
+        return "Thursday"
 
 
-def format_minutes_as_time(total_minutes):
-    """
-    Convert minutes after midnight into a HH:MM string.
+def to_minutes(time_number):
+    # Section: Convert a 24-hour integer into minutes
+    time_text = str(time_number)
 
-    Example:
-    525 minutes becomes 08:45.
-    """
-    hour = total_minutes // 60
-    minute = total_minutes % 60
+    if len(time_text) <= 2:
+        hour = int(time_text)
+        minute = 0
+    elif len(time_text) == 3:
+        hour = int(time_text[0])
+        minute = int(time_text[1:3])
+    else:
+        hour = int(time_text[:-2])
+        minute = int(time_text[-2:])
 
-    # :02d ensures two digits are displayed
-    return f"{hour:02d}:{minute:02d}"
+    return hour * 60 + minute
 
 
-def get_valid_time(prompt):
-    """
-    Ask the user for a time until a valid HH:MM time is entered.
-
-    The function uses convert_time_to_minutes() to validate the input.
-    It returns both the original formatted text and the minute value.
-    """
+def read_time(message):
+    # Section: Read and validate a time
     while True:
-        # strip() removes accidental spaces at the beginning or end
-        time_text = input(prompt).strip()
+        time_text = input(message).strip()
 
-        total_minutes = convert_time_to_minutes(time_text)
-
-        if total_minutes is None:
-            print("Invalid time. Enter a 24-hour time from 00:00 to 23:59.")
+        try:
+            time_number = int(time_text)
+        except ValueError:
+            print("Invalid time. Enter a number such as 830 or 1330.")
             continue
 
-        return time_text, total_minutes
-
-
-def get_number_of_classes(day):
-    """
-    Ask the user for the number of classes on a single day.
-
-    The answer must be a whole number from 0 to MAX_CLASSES.
-    """
-    while True:
-        answer = input(
-            f"How many classes do you have on {day}? "
-            f"(0-{MAX_CLASSES}): "
-        ).strip()
-
-        # isdigit() verifies that the answer contains digits
-        if not answer.isdigit():
-            print("Invalid input. Enter a whole number.")
+        if time_number < 0:
+            print("Time cannot be negative.")
             continue
 
-        number = int(answer)
+        if len(time_text) == 1 or len(time_text) == 2:
+            hour = int(time_text)
+            minute = 0
+        elif len(time_text) == 3:
+            hour = int(time_text[0])
+            minute = int(time_text[1:3])
+        else:
+            hour = int(time_text[:-2])
+            minute = int(time_text[-2:])
 
-        if number < 0 or number > MAX_CLASSES:
-            print(f"Invalid input. Enter a number from 0 to {MAX_CLASSES}.")
+        if hour > 23:
+            print("Hour must be between 0 and 23.")
             continue
 
-        return number
+        if minute > 59:
+            print("Minutes must be between 0 and 59.")
+            continue
+
+        return time_number
 
 
-def get_course_code(class_number, day):
-    """
-    Ask for and validate a course code.
-    """
+def read_end_time(message, start_time):
+    # Section: Read and validate the end time
     while True:
+        end_time = read_time(message)
+        start_minutes = to_minutes(start_time)
+        end_minutes = to_minutes(end_time)
+
+        if end_minutes <= start_minutes:
+            print("End time must be after start time.")
+            continue
+
+        return end_time
+
+
+def to_time(time_number):
+    # Section: Format a time as HH:MM
+    time_text = str(time_number)
+
+    if len(time_text) <= 2:
+        hour = int(time_text)
+        minute = 0
+    elif len(time_text) == 3:
+        hour = int(time_text[0])
+        minute = int(time_text[1:3])
+    else:
+        hour = int(time_text[:-2])
+        minute = int(time_text[-2:])
+
+    return str(hour).zfill(2) + ":" + str(minute).zfill(2)
+
+
+def has_conflict(start1, end1, start2, end2):
+    # Section: Check whether two classes overlap
+    start1_minutes = to_minutes(start1)
+    end1_minutes = to_minutes(end1)
+    start2_minutes = to_minutes(start2)
+    end2_minutes = to_minutes(end2)
+
+    if start1_minutes < end2_minutes and start2_minutes < end1_minutes:
+        return True
+    return False
+
+
+def make_line(course_code, start_time, end_time):
+    # Section: Create a timetable line
+    return course_code + " " + to_time(start_time) + " - " + to_time(end_time)
+
+
+# Section: Initialize weekly timetable strings
+# Strings and "|" separators are used instead of lists/dictionaries.
+sunday_codes = ""
+sunday_starts = ""
+sunday_ends = ""
+
+monday_codes = ""
+monday_starts = ""
+monday_ends = ""
+
+tuesday_codes = ""
+tuesday_starts = ""
+tuesday_ends = ""
+
+wednesday_codes = ""
+wednesday_starts = ""
+wednesday_ends = ""
+
+thursday_codes = ""
+thursday_starts = ""
+thursday_ends = ""
+
+# Section: Initialize the conflict report
+conflict_report = ""
+total_conflicts = 0
+
+print("University Timetable Organizer and Conflict Detector")
+print()
+
+# Section: Enter data for each day
+for day_number in range(1, 6):
+    day_name = get_day_name(day_number)
+    print("\n" + day_name)
+
+    # Section: Read a valid class count
+    while True:
+        try:
+            number_of_classes = int(input("Enter number of classes (0-4): "))
+        except ValueError:
+            print("Invalid input. Enter a number from 0 to 4.")
+            continue
+
+        if number_of_classes < 0 or number_of_classes > 4:
+            print("Invalid input. Enter a number from 0 to 4.")
+        else:
+            break
+
+    day_codes = ""
+    day_starts = ""
+    day_ends = ""
+
+    # Section: Read classes for the day
+    for class_number in range(1, number_of_classes + 1):
         course_code = input(
-            f"Enter course code for class {class_number} on {day}: "
+            "Enter course code for class " + str(class_number) + ": "
         ).strip()
 
         if course_code == "":
-            print("The course code cannot be empty.")
+            print("Course code cannot be empty.")
+            class_number = class_number - 1
             continue
 
-        return course_code
-
-
-def enter_one_class(day, class_number):
-    """
-    Enter all information for one class.
-
-    The function:
-    1. Gets the course code.
-    2. Gets a valid start time.
-    3. Gets a valid end time.
-    4. Makes sure the end time is after the start time.
-    """
-    course_code = get_course_code(class_number, day)
-
-    # Get a start time in 24-hour format
-    start_text, start_minutes = get_valid_time(
-        "Enter start time (HH:MM): "
-    )
-
-    # Keep asking until the end time is later than the start time
-    while True:
-        end_text, end_minutes = get_valid_time(
-            "Enter end time (HH:MM): "
+        start_time = read_time(
+            "Enter start time for " + course_code +
+            " (for example, 830 or 1330): "
+        )
+        end_time = read_end_time(
+            "Enter end time for " + course_code +
+            " (for example, 930 or 1430): ",
+            start_time
         )
 
-        if end_minutes <= start_minutes:
-            print("Error: End time must be after start time.")
-            continue
+        if day_codes == "":
+            day_codes = course_code
+            day_starts = str(start_time)
+            day_ends = str(end_time)
+        else:
+            day_codes = day_codes + "|" + course_code
+            day_starts = day_starts + "|" + str(start_time)
+            day_ends = day_ends + "|" + str(end_time)
 
-        break
+    # Section: Store the entered day
+    if day_number == 1:
+        sunday_codes = day_codes
+        sunday_starts = day_starts
+        sunday_ends = day_ends
+    elif day_number == 2:
+        monday_codes = day_codes
+        monday_starts = day_starts
+        monday_ends = day_ends
+    elif day_number == 3:
+        tuesday_codes = day_codes
+        tuesday_starts = day_starts
+        tuesday_ends = day_ends
+    elif day_number == 4:
+        wednesday_codes = day_codes
+        wednesday_starts = day_starts
+        wednesday_ends = day_ends
+    else:
+        thursday_codes = day_codes
+        thursday_starts = day_starts
+        thursday_ends = day_ends
 
-    # Return a dictionary containing the class information
-    return {
-        "course_code": course_code,
-        "start_text": start_text,
-        "start_minutes": start_minutes,
-        "end_text": end_text,
-        "end_minutes": end_minutes
-    }
+# Section: Detect conflicts for all days
+for day_number in range(1, 6):
+    day_name = get_day_name(day_number)
 
+    if day_number == 1:
+        day_codes = sunday_codes
+        day_starts = sunday_starts
+        day_ends = sunday_ends
+    elif day_number == 2:
+        day_codes = monday_codes
+        day_starts = monday_starts
+        day_ends = monday_ends
+    elif day_number == 3:
+        day_codes = tuesday_codes
+        day_starts = tuesday_starts
+        day_ends = tuesday_ends
+    elif day_number == 4:
+        day_codes = wednesday_codes
+        day_starts = wednesday_starts
+        day_ends = wednesday_ends
+    else:
+        day_codes = thursday_codes
+        day_starts = thursday_starts
+        day_ends = thursday_ends
 
-def enter_timetable():
-    """
-    Ask the user to enter all classes for Sunday through Thursday.
+    if day_codes == "":
+        continue
 
-    The timetable is stored as a dictionary:
-    timetable[day] = list of classes
-    """
-    timetable = {}
+    codes = day_codes.split("|")
+    starts = day_starts.split("|")
+    ends = day_ends.split("|")
 
-    # Repeat once for each day
-    for day in DAYS:
-        print(f"\n--- {day} ---")
-
-        number_of_classes = get_number_of_classes(day)
-        timetable[day] = []
-
-        # Repeat for every class entered for this day
-        for class_number in range(1, number_of_classes + 1):
-            print(f"\nClass {class_number}:")
-
-            # Add the returned class dictionary to this day
-            class_data = enter_one_class(day, class_number)
-            timetable[day].append(class_data)
-
-    return timetable
-
-
-def display_timetable(timetable):
-    """
-    Display the complete timetable using HH:MM format.
-    """
-    print("\n========================================")
-    print("             DAILY TIMETABLE")
-    print("========================================")
-
-    # Loop through each day in its original order
-    for day in DAYS:
-        print(f"\n{day}:")
-        classes = timetable[day]
-
-        if len(classes) == 0:
-            print("  No classes")
-            continue
-
-        # Loop through each class on the current day
-        for course in classes:
-            print(
-                f"  {course['course_code']}: "
-                f"{format_minutes_as_time(course['start_minutes'])} - "
-                f"{format_minutes_as_time(course['end_minutes'])}"
+    # Section: Compare every pair of classes
+    for first_index in range(len(codes)):
+        for second_index in range(first_index + 1, len(codes)):
+            conflict = has_conflict(
+                int(starts[first_index]),
+                int(ends[first_index]),
+                int(starts[second_index]),
+                int(ends[second_index])
             )
 
+            if conflict:
+                total_conflicts = total_conflicts + 1
+                conflict_report = conflict_report + (
+                    day_name + ": " +
+                    codes[first_index] + " conflicts with " +
+                    codes[second_index] + "\n"
+                )
 
-def classes_overlap(class_one, class_two):
-    """
-    Return True when two classes overlap in time.
+# Section: Display the weekly timetable
+print("\n==============================")
+print("Weekly Timetable")
+print("==============================")
 
-    A conflict exists when:
-    class_one starts before class_two ends
-    AND
-    class_two starts before class_one ends
+for day_number in range(1, 6):
+    day_name = get_day_name(day_number)
 
-    Classes that only touch at a boundary do not conflict.
-    Example: 08:00-09:00 and 09:00-10:00 do not conflict.
-    """
-    return (
-        class_one["start_minutes"] < class_two["end_minutes"]
-        and
-        class_two["start_minutes"] < class_one["end_minutes"]
-    )
+    if day_number == 1:
+        day_codes = sunday_codes
+        day_starts = sunday_starts
+        day_ends = sunday_ends
+    elif day_number == 2:
+        day_codes = monday_codes
+        day_starts = monday_starts
+        day_ends = monday_ends
+    elif day_number == 3:
+        day_codes = tuesday_codes
+        day_starts = tuesday_starts
+        day_ends = tuesday_ends
+    elif day_number == 4:
+        day_codes = wednesday_codes
+        day_starts = wednesday_starts
+        day_ends = wednesday_ends
+    else:
+        day_codes = thursday_codes
+        day_starts = thursday_starts
+        day_ends = thursday_ends
 
+    print("\n" + day_name + ":")
 
-def detect_conflicts(timetable):
-    """
-    Compare every pair of classes on the same day.
+    if day_codes == "":
+        print("  No classes")
+        continue
 
-    Nested loops are used because each class must be compared
-    with only the classes that appear after it.
-    """
-    conflict_report = {}
+    codes = day_codes.split("|")
+    starts = day_starts.split("|")
+    ends = day_ends.split("|")
 
-    for day in DAYS:
-        classes = timetable[day]
-        daily_conflicts = []
+    # Section: Mark each class involved in a conflict
+    for class_index in range(len(codes)):
+        timetable_line = make_line(
+            codes[class_index],
+            int(starts[class_index]),
+            int(ends[class_index])
+        )
 
-        # i identifies the first class in a pair
-        for i in range(len(classes)):
-            for j in range(i + 1, len(classes)):
-                first_class = classes[i]
-                second_class = classes[j]
+        involved_in_conflict = False
 
-                if classes_overlap(first_class, second_class):
-                    conflict_description = (
-                        f"{first_class['course_code']} "
-                        f"({format_minutes_as_time(first_class['start_minutes'])}-"
-                        f"{format_minutes_as_time(first_class['end_minutes'])}) "
-                        f"overlaps with "
-                        f"{second_class['course_code']} "
-                        f"({format_minutes_as_time(second_class['start_minutes'])}-"
-                        f"{format_minutes_as_time(second_class['end_minutes'])})"
-                    )
+        for other_index in range(len(codes)):
+            if class_index != other_index:
+                conflict = has_conflict(
+                    int(starts[class_index]),
+                    int(ends[class_index]),
+                    int(starts[other_index]),
+                    int(ends[other_index])
+                )
 
-                    daily_conflicts.append(conflict_description)
+                if conflict:
+                    involved_in_conflict = True
 
-        # Save this day's conflicts in the report
-        conflict_report[day] = daily_conflicts
+        if involved_in_conflict:
+            timetable_line = timetable_line + " <-- CONFLICT!"
 
-    return conflict_report
+        print("  " + timetable_line)
 
+# Section: Display the conflict report
+print("\n==============================")
+print("Conflict Report")
+print("==============================")
 
-def display_conflict_report(conflict_report):
-    """
-    Display conflicts for every day and count the total conflicts.
+if total_conflicts == 0:
+    print("No conflicts found")
+else:
+    print(conflict_report, end="")
+    print("Total number of conflicts: " + str(total_conflicts))
 
-    Each pair of overlapping classes counts as one conflict.
-    """
-    print("\n========================================")
-    print("              CONFLICT REPORT")
-    print("========================================")
-
-    total_conflicts = 0
-
-    for day in DAYS:
-        print(f"\n{day}:")
-        conflicts = conflict_report[day]
-
-        if len(conflicts) == 0:
-            print("  No conflicts")
-            continue
-
-        # Display and count all conflicts for this day
-        for conflict in conflicts:
-            print(f"  Conflict: {conflict}")
-            total_conflicts += 1
-
-    print("\n----------------------------------------")
-    print(f"Total number of conflicts: {total_conflicts}")
-    print("----------------------------------------")
-
-
-def main():
-    """
-    Run the main parts of the timetable program.
-    """
-    print("University Timetable Organizer")
-    print("==============================")
-
-    timetable = enter_timetable()
-
-    display_timetable(timetable)
-
-    conflict_report = detect_conflicts(timetable)
-
-    display_conflict_report(conflict_report)
-
-
-# Start the program
-main()
+print("\nProgram ended.")
