@@ -1,123 +1,129 @@
-def validate_time(time_string):
-    """Return time in minutes if HH:MM format is valid, otherwise None."""
-    try:
-        if len(time_string) != 5 or time_string[2] != ":":
-            return None
+from datetime import datetime
 
-        hours = int(time_string[:2])
-        minutes = int(time_string[3:])
-        if 0 <= hours <= 23 and 0 <= minutes <= 59:
-            return hours * 60 + minutes
-    except ValueError:
-        pass
+DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
 
-    return None
+weekly_timetable = {}
+conflict_report = []
+conflict_counter = 0
 
 
-def main():
-    days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
-    timetable = {}
-    conflict_report = []
-    conflict_count = 0
+def time_to_minutes(time_text):
+    """Convert HH:MM into minutes after midnight."""
+    return int(time_text[:2]) * 60 + int(time_text[3:])
 
-    print("=== Weekly Timetable Program ===")
 
-    for day in days:
-        print(f"\n--- {day} ---")
+def input_time(prompt):
+    while True:
+        time_text = input(prompt).strip()
+
+        try:
+            parsed_time = datetime.strptime(time_text, "%H:%M")
+        except ValueError:
+            print("Invalid time format. Use 24-hour HH:MM format.")
+            continue
+
+        if parsed_time.hour > 23 or parsed_time.minute > 59:
+            print("Invalid time. Enter a time between 00:00 and 23:59.")
+            continue
+
+        return time_text
+
+
+print("Weekly Timetable Program")
+print("========================")
+
+for day in DAYS:
+    print(f"\n--- {day} ---")
+
+    while True:
+        try:
+            class_count = int(input(f"Enter number of classes for {day} (0–4): "))
+        except ValueError:
+            print("Please enter a whole number from 0 to 4.")
+            continue
+
+        if 0 <= class_count <= 4:
+            break
+        print("Number of classes must be from 0 to 4.")
+
+    classes = []
+
+    for class_index in range(1, class_count + 1):
+        print(f"\nClass {class_index}")
 
         while True:
-            try:
-                class_count = int(input("Enter number of classes (0–4): "))
-                if 0 <= class_count <= 4:
-                    break
-                print("Invalid input. Enter a number from 0 to 4.")
-            except ValueError:
-                print("Invalid input. Enter a number from 0 to 4.")
+            class_code = input("Enter class code: ").strip()
+            if class_code:
+                break
+            print("Class code cannot be empty.")
 
-        classes = []
+        start_time = input_time("Enter start time (HH:MM): ")
 
-        for i in range(1, class_count + 1):
-            print(f"\nClass {i}:")
-            code = input("Enter class code: ").strip()
+        while True:
+            end_time = input_time("Enter end time (HH:MM): ")
 
-            while True:
-                start_text = input("Enter start time (HH:MM): ").strip()
-                start_minutes = validate_time(start_text)
+            start_minutes = time_to_minutes(start_time)
+            end_minutes = time_to_minutes(end_time)
 
-                if start_minutes is None:
-                    print("Invalid time format. Use HH:MM (for example, 09:30).")
-                    continue
-
-                end_text = input("Enter end time (HH:MM): ").strip()
-                end_minutes = validate_time(end_text)
-
-                if end_minutes is None:
-                    print("Invalid time format. Use HH:MM (for example, 11:30).")
-                    continue
-
-                if end_minutes <= start_minutes:
-                    print("End time must be after start time.")
-                    continue
-
+            if end_minutes <= start_minutes:
+                print("End time must be after start time.")
+            else:
                 break
 
-            classes.append({
-                "code": code,
-                "start": start_text,
-                "end": end_text,
-                "start_minutes": start_minutes,
-                "end_minutes": end_minutes
-            })
+        classes.append({
+            "code": class_code,
+            "start": start_time,
+            "end": end_time,
+            "start_minutes": start_minutes,
+            "end_minutes": end_minutes
+        })
 
-        for i in range(len(classes)):
-            for j in range(i + 1, len(classes)):
-                first = classes[i]
-                second = classes[j]
+    # Check every pair of classes for overlap on this day.
+    for i in range(len(classes)):
+        for j in range(i + 1, len(classes)):
+            first = classes[i]
+            second = classes[j]
 
-                overlap = (
-                    first["start_minutes"] < second["end_minutes"]
-                    and second["start_minutes"] < first["end_minutes"]
+            overlaps = (
+                first["start_minutes"] < second["end_minutes"]
+                and second["start_minutes"] < first["end_minutes"]
+            )
+
+            if overlaps:
+                conflict_counter += 1
+                conflict_report.append(
+                    f"{day}: {first['code']} ({first['start']}–{first['end']}) "
+                    f"overlaps with {second['code']} "
+                    f"({second['start']}–{second['end']})"
                 )
 
-                if overlap:
-                    conflict_count += 1
-                    conflict_report.append(
-                        f"{day}: Conflict between {first['code']} "
-                        f"({first['start']}–{first['end']}) and "
-                        f"{second['code']} "
-                        f"({second['start']}–{second['end']})"
-                    )
+    weekly_timetable[day] = classes
 
-        timetable[day] = classes
+print("\n========================")
+print("WEEKLY TIMETABLE")
+print("========================")
 
-    print("\n==============================")
-    print("       WEEKLY TIMETABLE")
-    print("==============================")
+for day in DAYS:
+    print(f"\n{day}:")
 
-    for day in days:
-        print(f"\n{day}:")
-        if not timetable[day]:
-            print("  No classes")
-        else:
-            for class_info in timetable[day]:
-                print(
-                    f"  {class_info['code']} "
-                    f"- {class_info['start']} to {class_info['end']}"
-                )
+    if not weekly_timetable[day]:
+        print("  No classes")
+        continue
 
-    print("\n==============================")
-    print("        CONFLICT REPORT")
-    print("==============================")
+    for class_info in weekly_timetable[day]:
+        print(
+            f"  {class_info['code']}: "
+            f"{class_info['start']}–{class_info['end']}"
+        )
 
-    if not conflict_report:
-        print("No conflicts found.")
-    else:
-        for conflict in conflict_report:
-            print(conflict)
+print("\n========================")
+print("CONFLICT REPORT")
+print("========================")
 
-    print(f"\nTotal conflicts: {conflict_count}")
-    print("\nProgram ended.")
+if conflict_report:
+    for conflict in conflict_report:
+        print(conflict)
+else:
+    print("No conflicts found.")
 
-
-if __name__ == "__main__":
-    main()
+print(f"\nTotal number of conflicts: {conflict_counter}")
